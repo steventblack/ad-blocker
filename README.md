@@ -36,7 +36,7 @@ These instructions have been verified as working on a Synology DS1513+ running D
 1. (Optional) Set a limit on the Zone Transfer rules to restrict it to your LAN
 1. (Optional) Set a limit on the source IP rules to restrict it to your LAN
 
-The Domain Name _must_ be `null.zone.file` and the Serial Format must be set as `Date` as that is what the updater script expects. The Master DNS Server should have the same IP address as your Synology device. (This will be overwritten later.)
+The Domain Name _must_ be `null.zone.file` and the Serial Format _must_ be set as `Date` as that is what the updater script requires. The Master DNS Server should have the same IP address as your Synology device. (Don't fret over this; it will be overwritten later.)
 
 ## Script Installation
 1. SSH as the administrator to the Synology device
@@ -49,14 +49,14 @@ The Domain Name _must_ be `null.zone.file` and the Serial Format must be set as 
     * `sudo chown DNSServer:DNSServer ad-blocker.sh`
     * `sudo chmod +x ad-blocker.sh`
 1. Verify the script executes properly
-    * `sudo -u DNSServer ./ad-blocker.sh`
+    * `sudo ./ad-blocker.sh`
     * Verify `/var/packages/DNSServer/target/named/etc/zone/data/ad-blocker.db` exists and has ~200k of data
     * Verify `/var/packages/DNSServer/target/named/etc/zone/data/null.zone.file` has the line `include "/etc/zone/data/ad-blocker.db";`
     * Verify `/var/packages/DNSServer/target/named/etc/zone/master/null.zone.file` is updated with the correct serial number
     
 The ad-blocking functionality should now be in effect. You can test the effectiveness by disabling any ad-blocking plugins in your browser and navigating to any ad-laden website to verify ads remain suppressed. Mobile devices should similarly be tested.
 
-## List Updating
+## Automated Block List Updating
 1. Log in as administrator to the Synology DSM (administration interface)
 1. Open up the "Control Panel" app.
 1. Select the "Task Scheduler" service.
@@ -76,7 +76,39 @@ The ad-blocking functionality should now be in effect. You can test the effectiv
 The run time should be set to run no more than once a day and be performed at an off-peak traffic time. The block lists don't change that frequently so be courteous to the provider. It is not strictly necessary to have the run details sent via email, but enabling it may help if there's a need to troubleshoot.
 
 ## Blacklist/Whitelist
-_Features under development; please stand by_
+User-defined blacklist/whitelist functionality has been added to allow personalized rules to either enhance blocking or permit access. Templates for the configuration files of this functionality are automatically created upon the initial run of the `ad-blocker.sh` script.
+
+### Blacklist
+A user-defined blacklist functionality is available to add custom domains into the block list. This may help fill in any "gaps" for domains not captured by the [yoyo.org](http://pgl.yoyo.org/adservers/) block list. There is no harm if a domain appears in both the user-specified black list and the main list as the scripts will detect the duplicate and skip over any redundant mentions.
+
+1. SSH as the administrator to the Synology device
+    * `ssh admin@synology.example.com`
+1. Navigate to the DNS Server package directory
+    * `cd /var/packages/DNSServer/target/named/etc/conf`
+1. Open `ad-blocker-bl.conf` for editing
+    * `sudo vi ad-blocker-bl.conf`
+1. Add additional fully-qualified domains (one per line) and save the file
+    * Example: `ad.example.com`
+    * Comments are indicated by a `#` as the first character on a line
+1. Re-run the `ad-blocker.sh` script to pick up the changes (or wait until next scheduled time)
+    * `cd /var/packages/DNSServer/target/script`
+    * `sudo ./ad-blocker.sh`
+
+### Whitelist
+The user-defined whitelist allows specified domains to continue to work despite their appearance in either the Block list or the blacklist. Note that the whitelist is applied last, regardless as to the the source of the domain.
+
+1. SSH as the administrator to the Synology device
+    * `ssh admin@synology.example.com`
+1. Navigate to the DNS Server package directory
+    * `cd /var/packages/DNSServer/target/named/etc/conf`
+1. Open `ad-blocker-wl.conf` for editing
+    * `sudo vi ad-blocker-wl.conf`
+1. Add additional fully-qualified domains (one per line) and save the file
+    * Example: `ad.example.com`
+    * Comments are indicated by a `#` as the first character on a line
+1. Re-run the `ad-blocker.sh` script to pick up the changes (or wait until next scheduled time)
+    * `cd /var/packages/DNSServer/target/script`
+    * `sudo ./ad-blocker.sh`
 
 ## Caveats
 This solution works well for blocking the vast majority of ad providers. It should help speed up page rendering as well as provide a degree of privacy and security to your devices. However, it is not a panacea and you should continue to practice safe browsing habits. In particular, remember that this solution only applies to devices _within_ the LAN and so mobile devices may lose any protections it offers when using a different network.
