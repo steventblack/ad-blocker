@@ -6,6 +6,7 @@
 #
 # 2017-04-17 - 1.0.0 Initial release
 # 2017-04-18 - 1.1.0 Improved modularization; added functionality for white & black lists
+# 2017-04-25 - 1.1.1 Relocated conf dir to /usr/local/etc
 #
 ###########################
 
@@ -169,8 +170,8 @@ update_zone_master () {
 }
 
 # Global vars for common paths
+ConfDir="/usr/local/etc"
 RootDir="/var/packages/DNSServer/target"
-ConfDir="${RootDir}/named/etc/conf"
 ZoneDir="${RootDir}/named/etc/zone"
 ZoneDataDir="${ZoneDir}/data"
 ZoneMasterDir="${ZoneDir}/master"
