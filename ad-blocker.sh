@@ -7,6 +7,7 @@
 # 2017-04-17 - 1.0.0 Initial release
 # 2017-04-18 - 1.1.0 Improved modularization; added functionality for white & black lists
 # 2017-04-25 - 1.1.1 Relocated conf dir to /usr/local/etc
+# 2017-04-25 - 1.1.2 Relocate script dir; update checks to create conf templates 
 #
 ###########################
 
@@ -25,6 +26,34 @@ check_deps () {
   if [ $MissingDeps -gt 0 ]; then
     printf "%d commands not found in PATH; aborting\n" "$MissingDeps" >&2
     exit 1
+  fi
+}
+
+# check for whitelist/blacklist configuration files & create templates if not present
+check_conf () {
+  local WhiteList="${ConfDir}/ad-blocker-wl.conf"
+  local BlackList="${ConfDir}/ad-blocker-bl.conf"
+
+  # if no white list found, then create a template & instructions
+  if [ ! -f "$WhiteList" ]; then
+    echo "No white list found; creating template" >&2
+	
+    echo "# White list of domains to remain unblocked for ad-blocker.sh" > "$WhiteList"
+    echo "# Add one fully-qualified domain name per line" >> "$WhiteList"
+    echo "# Comments are indicated by a '#' as the first character" >> "$WhiteList"
+    echo "# example:" >> "$WhiteList"
+    echo "# ad.example.com" >> "$WhiteList"
+  fi
+
+  # if no black list found, then create a template & instructions
+  if [ ! -f "$BlackList" ]; then
+    echo "No black list found; creating template" >&2
+
+    echo "# Black list of additional domains for ad-blocker.sh" > "$BlackList"
+    echo "# Add one fully-qualified domain name per line" >> "$BlackList"
+    echo "# Comments are indicted by a '#' as the first character" >> "$BlackList"
+    echo "# example:" >> "$BlackList"
+    echo "# ad.example.com" >> "$BlackList"
   fi
 }
 
@@ -55,15 +84,8 @@ apply_blacklist () {
   local BlackList="${ConfDir}/ad-blocker-bl.conf"
   local BlockList="/tmp/ad-blocker.new"
 
+  # skip if the config doesn't exist
   if [ ! -f "$BlackList" ]; then
-    echo "No black list found; creating template" >&2
-
-	echo "# Black list of additional domains for ad-blocker.sh" > "$BlackList"
-	echo "# Add one fully-qualified domain name per line" >> "$BlackList"
-	echo "# Comments are indicted by a '#' as the first character" >> "$BlackList"
-	echo "# example:" >> "$BlackList"
-	echo "# ad.example.com" >> "$BlackList"
-
     return 0;
   fi
 
@@ -71,22 +93,22 @@ apply_blacklist () {
   while read Line
   do
     # strip the line if it starts with a '#'
-	# if the line was stripped, then continue on to the next line
+    # if the line was stripped, then continue on to the next line
     local Domain=$(echo $Line | grep -v "^[[:space:]*\#]")
-	if [ -z "$Domain" ]; then
-	  continue;
-	fi
+    if [ -z "$Domain" ]; then
+      continue;
+    fi
 	
-	# if domain already listed then skip it and continue on to the next line
-	# make sure you don't get a false positive with a partial match
-	# by using the "-w" option on grep
-	local Found=$(grep -w $Domain $BlockList)
-	if [ ! -z "$Found" ]; then
-	  continue;
-	fi
+    # if domain already listed then skip it and continue on to the next line
+    # make sure you don't get a false positive with a partial match
+    # by using the "-w" option on grep
+    local Found=$(grep -w $Domain $BlockList)
+    if [ ! -z "$Found" ]; then
+      continue;
+    fi
 
     # domain not found, so append it to the list
-	echo "zone \"$Domain\" { type master; notify no; file \"/etc/zone/master/null.zone.file\"; };" >> "$BlockList"
+    echo "zone \"$Domain\" { type master; notify no; file \"/etc/zone/master/null.zone.file\"; };" >> "$BlockList"
 
   done < "$BlackList"
 }
@@ -97,33 +119,25 @@ apply_whitelist () {
   local BlockList="/tmp/ad-blocker.new"
   local BlockListTmp="/tmp/ad-blocker.tmp"
 
-  # if no white list found, then create a template & instructions
-  if [ ! -f "$WhiteList" ]; then
-    echo "No white list found; creating template" >&2
-	
-	echo "# White list of domains to remain unblocked for ad-blocker.sh" > "$WhiteList"
-	echo "# Add one fully-qualified domain name per line" >> "$WhiteList"
-	echo "# Comments are indicated by a '#' as the first character" >> "$WhiteList"
-	echo "# example:" >> "$WhiteList"
-	echo "# ad.example.com" >> "$WhiteList"
-
-    return 0;
+  # skip if the config doesn't exist
+  if [ ! -f $"WhiteList" ]; then
+    return 0
   fi
 
   # process the whitelist skipping over any comment lines
   while read Line
   do
     # strip the line if it starts with a '#'
-	# if the line was stripped, then continue on to the next line
+    # if the line was stripped, then continue on to the next line
     local Domain=$(echo $Line | grep -v "^[[:space:]*\#]")
-	if [ -z "$Domain" ]; then
-	  continue;
-	fi
+    if [ -z "$Domain" ]; then
+      continue;
+    fi
 
     # copy every line in the blocklist *except* those matching the whitelisted domain
-	# into a temp file and then copy the temp file back over the original source
-	grep -w -v "$Domain" "$BlockList" > "$BlockListTmp"
-	mv "$BlockListTmp" "$BlockList"
+    # into a temp file and then copy the temp file back over the original source
+    grep -w -v "$Domain" "$BlockList" > "$BlockListTmp"
+    mv "$BlockListTmp" "$BlockList"
   done < "$WhiteList"
 }
 
@@ -177,8 +191,9 @@ ZoneDataDir="${ZoneDir}/data"
 ZoneMasterDir="${ZoneDir}/master"
 
 # Main Routine
-check_user
 check_deps
+check_conf
+check_user
 fetch_blocklist
 apply_blacklist
 apply_whitelist
