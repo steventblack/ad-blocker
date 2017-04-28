@@ -175,8 +175,8 @@ update_zone_master () {
   echo '  7200         ; retry 2 hours'    >> "$ZoneMasterFile"
   echo '  864000       ; expire 10 days'   >> "$ZoneMasterFile"
   echo '  86400 )      ; min ttl 1 day'    >> "$ZoneMasterFile"
-  echo 'NS       ns.null.zone.file.'       >> "$ZoneMasterFile"
-  echo 'A        127.0.0.1'                >> "$ZoneMasterFile"
+  echo '  IN NS  ns.null.zone.file.'       >> "$ZoneMasterFile"
+  echo '  IN A   127.0.0.1'                >> "$ZoneMasterFile"
   echo '* IN A   127.0.0.1'                >> "$ZoneMasterFile"
 
   # reload the server config to pick up the changes
