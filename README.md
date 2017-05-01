@@ -33,10 +33,11 @@ These instructions have been verified as working on a Synology DS1513+ running D
     * Domain Name: `null.zone.file`
     * Master DNS Server: `<IP Address of your Synology Device>`
     * Serial Format: Date (YYYYMMDDNN)
-1. (Optional) Set a limit on the Zone Transfer rules to restrict it to your LAN
-1. (Optional) Set a limit on the source IP rules to restrict it to your LAN
+1. Enable "Limit zone update" but do __not__ set any values for it.
+1. (Optional) Set a limit on the Zone Transfer rules to restrict it to your LAN.
+1. (Optional) Set a limit on the source IP rules to restrict it to your LAN.
 
-The Domain Name _must_ be `null.zone.file` and the Serial Format _must_ be set as `Date` as that is what the updater script requires. The Master DNS Server should have the same IP address as your Synology device. (Don't fret over this; it will be overwritten later.)
+The Domain Name _must_ be `null.zone.file` and the Serial Format _must_ be set as `Date` as that is what the updater script requires. The blocked zones must reference a static zone configuration file and so the "Limit zone update" must be enabled with no values so that the resulting configuration file is generated with the line `allow-update {none;};`. The Master DNS Server should have the same IP address as your Synology device. (Don't fret over this; it will be overwritten later.)
 
 ## Script Installation
 1. SSH as the administrator to the Synology device
