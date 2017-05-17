@@ -8,7 +8,8 @@
 # 2017-04-18 - 1.1.0 Improved modularization; added functionality for white & black lists
 # 2017-04-25 - 1.1.1 Relocated conf dir to /usr/local/etc
 # 2017-04-25 - 1.1.2 Relocate script dir; update checks to create conf templates 
-# 2017-04-25 - 1.1.3 Remove local declarations for improved compatibility
+# 2017-05-17 - 1.1.3 Remove local declarations for improved compatibility
+# 2017-05-17 - 1.1.4 Cleanup syntax as per shellcheck.net suggestions
 #
 ###########################
 
@@ -39,32 +40,32 @@ check_conf () {
   if [ ! -f "$WhiteList" ]; then
     echo "No white list found; creating template" >&2
 	
-    echo "# White list of domains to remain unblocked for ad-blocker.sh" > "$WhiteList"
-    echo "# Add one fully-qualified domain name per line" >> "$WhiteList"
-    echo "# Comments are indicated by a '#' as the first character" >> "$WhiteList"
-    echo "# example:" >> "$WhiteList"
-    echo "# ad.example.com" >> "$WhiteList"
+	{ echo "# White list of domains to remain unblocked for ad-blocker.sh"; 
+      echo "# Add one fully-qualified domain name per line"; 
+      echo "# Comments are indicated by a '#' as the first character"; 
+      echo "# example:"; 
+      echo "# ad.example.com"; } > "$WhiteList"
   fi
 
   # if no black list found, then create a template & instructions
   if [ ! -f "$BlackList" ]; then
     echo "No black list found; creating template" >&2
 
-    echo "# Black list of additional domains for ad-blocker.sh" > "$BlackList"
-    echo "# Add one fully-qualified domain name per line" >> "$BlackList"
-    echo "# Comments are indicted by a '#' as the first character" >> "$BlackList"
-    echo "# example:" >> "$BlackList"
-    echo "# ad.example.com" >> "$BlackList"
+    { echo "# Black list of additional domains for ad-blocker.sh"; 
+      echo "# Add one fully-qualified domain name per line"; 
+      echo "# Comments are indicted by a '#' as the first character"; 
+      echo "# example:"; 
+      echo "# ad.example.com"; } > "$BlackList"
   fi
 }
 
 # verify running as proper user
 # if not, attempt to switch and abort if cannot
 check_user () {
-  User=`whoami`
+  User=$(whoami)
   if [ "$User" != "DNSServer" ]; then
     echo "Running as $User; switching to DNSServer" >&2
-    su -m DNSServer $0 "$@" || exit 1
+    su -m DNSServer "$0" "$@" || exit 1
 	exit 0
   fi
 }
@@ -91,11 +92,11 @@ apply_blacklist () {
   fi
 
   # process the blacklist skipping over any comment lines
-  while read Line
+  while read -r Line
   do
     # strip the line if it starts with a '#'
     # if the line was stripped, then continue on to the next line
-    Domain=$(echo $Line | grep -v "^[[:space:]*\#]")
+    Domain=$(echo "$Line" | grep -v "^[[:space:]*\#]")
     if [ -z "$Domain" ]; then
       continue;
     fi
@@ -103,7 +104,7 @@ apply_blacklist () {
     # if domain already listed then skip it and continue on to the next line
     # make sure you don't get a false positive with a partial match
     # by using the "-w" option on grep
-    Found=$(grep -w $Domain $BlockList)
+    Found=$(grep -w "$Domain" "$BlockList")
     if [ ! -z "$Found" ]; then
       continue;
     fi
@@ -121,16 +122,16 @@ apply_whitelist () {
   BlockListTmp="/tmp/ad-blocker.tmp"
 
   # skip if the config doesn't exist
-  if [ ! -f $"WhiteList" ]; then
+  if [ ! -f "$WhiteList" ]; then
     return 0
   fi
 
   # process the whitelist skipping over any comment lines
-  while read Line
+  while read -r Line
   do
     # strip the line if it starts with a '#'
     # if the line was stripped, then continue on to the next line
-    Domain=$(echo $Line | grep -v "^[[:space:]*\#]")
+    Domain=$(echo "$Line" | grep -v "^[[:space:]*\#]")
     if [ -z "$Domain" ]; then
       continue;
     fi
@@ -155,7 +156,7 @@ update_zone_data () {
   # check for the include statement in the ZoneDataFile
   # if it is present do nothing, else append the include statement to the ZoneDataFile
   if [ -f "$ZoneDataDB" ] && [ -f "$ZoneDataFile" ]; then
-    Matches=`grep 'include "/etc/zone/data/ad-blocker.db";' "$ZoneDataFile"`
+    Matches=$(grep 'include "/etc/zone/data/ad-blocker.db";' "$ZoneDataFile")
     if [ -z "$Matches" ]; then
       echo '' >> "$ZoneDataFile"
       echo 'include "/etc/zone/data/ad-blocker.db";' >> "$ZoneDataFile"
@@ -173,19 +174,19 @@ update_zone_master () {
   fi
 
   # rebuild the zone master file with the updated serial number
-  echo '$TTL 86400     ; one day'          >> "$ZoneMasterFile"
-  echo '@ IN SOA ns.null.zone.file. mail.null.zone.file. (' >> "$ZoneMasterFile"
-  echo '  '${Now}'00   ; serial number YYYYMMDDNN'          >> "$ZoneMasterFile"
-  echo '  86400        ; refresh 1 day'    >> "$ZoneMasterFile"
-  echo '  7200         ; retry 2 hours'    >> "$ZoneMasterFile"
-  echo '  864000       ; expire 10 days'   >> "$ZoneMasterFile"
-  echo '  86400 )      ; min ttl 1 day'    >> "$ZoneMasterFile"
-  echo '  IN NS  ns.null.zone.file.'       >> "$ZoneMasterFile"
-  echo '  IN A   127.0.0.1'                >> "$ZoneMasterFile"
-  echo '* IN A   127.0.0.1'                >> "$ZoneMasterFile"
+  { echo '$TTL 86400     ; one day';
+    echo '@ IN SOA ns.null.zone.file. mail.null.zone.file. (';
+    echo '  '${Now}'00   ; serial number YYYYMMDDNN';
+    echo '  86400        ; refresh 1 day';
+    echo '  7200         ; retry 2 hours';
+    echo '  864000       ; expire 10 days';
+    echo '  86400 )      ; min ttl 1 day';
+    echo '  IN NS  ns.null.zone.file.';
+    echo '  IN A   127.0.0.1';
+    echo '* IN A   127.0.0.1'; } > "$ZoneMasterFile"
 
   # reload the server config to pick up the changes
-  ${RootDir}/script/reload.sh
+  "${RootDir}"/script/reload.sh
 }
 
 # Global vars for common paths
@@ -198,7 +199,7 @@ ZoneMasterDir="${ZoneDir}/master"
 # Main Routine
 check_deps
 check_conf
-check_user
+check_user "$@"
 fetch_blocklist
 apply_blacklist
 apply_whitelist
