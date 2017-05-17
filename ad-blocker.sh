@@ -8,13 +8,14 @@
 # 2017-04-18 - 1.1.0 Improved modularization; added functionality for white & black lists
 # 2017-04-25 - 1.1.1 Relocated conf dir to /usr/local/etc
 # 2017-04-25 - 1.1.2 Relocate script dir; update checks to create conf templates 
+# 2017-04-25 - 1.1.3 Remove local declarations for improved compatibility
 #
 ###########################
 
 # routine for ensuring all necessary dependencies are found
 check_deps () {
-  local Deps="date grep mv rm sed wget whoami su"
-  local MissingDeps=0
+  Deps="date grep mv rm sed wget whoami su"
+  MissingDeps=0
 
   for NeededDep in $Deps; do
     if ! hash "$NeededDep" > /dev/null 2>&1; then
@@ -31,8 +32,8 @@ check_deps () {
 
 # check for whitelist/blacklist configuration files & create templates if not present
 check_conf () {
-  local WhiteList="${ConfDir}/ad-blocker-wl.conf"
-  local BlackList="${ConfDir}/ad-blocker-bl.conf"
+  WhiteList="${ConfDir}/ad-blocker-wl.conf"
+  BlackList="${ConfDir}/ad-blocker-bl.conf"
 
   # if no white list found, then create a template & instructions
   if [ ! -f "$WhiteList" ]; then
@@ -60,7 +61,7 @@ check_conf () {
 # verify running as proper user
 # if not, attempt to switch and abort if cannot
 check_user () {
-  local User=`whoami`
+  User=`whoami`
   if [ "$User" != "DNSServer" ]; then
     echo "Running as $User; switching to DNSServer" >&2
     su -m DNSServer $0 "$@" || exit 1
@@ -71,7 +72,7 @@ check_user () {
 # fetch the blocklist from yoyo.org and update the path element
 # for each entry to comply with the Synology setup
 fetch_blocklist () {
-  local BlocklistURL="http://pgl.yoyo.org/as/serverlist.php?hostformat=bindconfig&showintro=0&mimetype=plaintext"
+  BlocklistURL="http://pgl.yoyo.org/as/serverlist.php?hostformat=bindconfig&showintro=0&mimetype=plaintext"
 
   # the "-O-" tells wget to send the file to standard out instead of a real file
   # this makes it suitable for piping and eliminates need for another temp file
@@ -81,8 +82,8 @@ fetch_blocklist () {
 
 # user-specified list of domains to be blocked in addition to those from yoyo.org
 apply_blacklist () {
-  local BlackList="${ConfDir}/ad-blocker-bl.conf"
-  local BlockList="/tmp/ad-blocker.new"
+  BlackList="${ConfDir}/ad-blocker-bl.conf"
+  BlockList="/tmp/ad-blocker.new"
 
   # skip if the config doesn't exist
   if [ ! -f "$BlackList" ]; then
@@ -94,7 +95,7 @@ apply_blacklist () {
   do
     # strip the line if it starts with a '#'
     # if the line was stripped, then continue on to the next line
-    local Domain=$(echo $Line | grep -v "^[[:space:]*\#]")
+    Domain=$(echo $Line | grep -v "^[[:space:]*\#]")
     if [ -z "$Domain" ]; then
       continue;
     fi
@@ -102,7 +103,7 @@ apply_blacklist () {
     # if domain already listed then skip it and continue on to the next line
     # make sure you don't get a false positive with a partial match
     # by using the "-w" option on grep
-    local Found=$(grep -w $Domain $BlockList)
+    Found=$(grep -w $Domain $BlockList)
     if [ ! -z "$Found" ]; then
       continue;
     fi
@@ -115,9 +116,9 @@ apply_blacklist () {
 
 # user-specified list of domains to remain unblocked
 apply_whitelist () {
-  local WhiteList="${ConfDir}/ad-blocker-wl.conf"
-  local BlockList="/tmp/ad-blocker.new"
-  local BlockListTmp="/tmp/ad-blocker.tmp"
+  WhiteList="${ConfDir}/ad-blocker-wl.conf"
+  BlockList="/tmp/ad-blocker.new"
+  BlockListTmp="/tmp/ad-blocker.tmp"
 
   # skip if the config doesn't exist
   if [ ! -f $"WhiteList" ]; then
@@ -129,7 +130,7 @@ apply_whitelist () {
   do
     # strip the line if it starts with a '#'
     # if the line was stripped, then continue on to the next line
-    local Domain=$(echo $Line | grep -v "^[[:space:]*\#]")
+    Domain=$(echo $Line | grep -v "^[[:space:]*\#]")
     if [ -z "$Domain" ]; then
       continue;
     fi
@@ -143,9 +144,9 @@ apply_whitelist () {
 
 # make sure the include statement is added to the ZoneDataFile
 update_zone_data () {
-  local ZoneDataFile="${ZoneDataDir}/null.zone.file"
-  local ZoneDataDB="${ZoneDataDir}/ad-blocker.db"
-  local BlockList="/tmp/ad-blocker.new"
+  ZoneDataFile="${ZoneDataDir}/null.zone.file"
+  ZoneDataDB="${ZoneDataDir}/ad-blocker.db"
+  BlockList="/tmp/ad-blocker.new"
 
   # move the final version of the block list to the final location
   mv "$BlockList" "$ZoneDataDB"
@@ -164,8 +165,8 @@ update_zone_data () {
 
 # update the ZoneMasterFile with an new serial number
 update_zone_master () {
-  local Now=$(date +"%Y%m%d")
-  local ZoneMasterFile="${ZoneMasterDir}/null.zone.file" 
+  Now=$(date +"%Y%m%d")
+  ZoneMasterFile="${ZoneMasterDir}/null.zone.file" 
 
   if [ -f "$ZoneMasterFile" ]; then
     rm -f "$ZoneMasterFile"
