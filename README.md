@@ -72,7 +72,7 @@ The ad-blocking functionality should now be in effect. You can test the effectiv
     * Frequency: once a day
 1. For the "Task Settings" tab, fill in the fields as follow:
     * Send run details by email: `<your email here>`
-    * User defined script: `sudo /usr/local/bin/ad-blocker.sh`
+    * User defined script: `cd /tmp/; sudo /usr/local/bin/ad-blocker.sh`
 
 The run time should be set to run no more than once a day and be performed at an off-peak traffic time. The block lists don't change that frequently so be courteous to the provider. It is not strictly necessary to have the run details sent via email, but enabling it may help if there's a need to troubleshoot.
 
