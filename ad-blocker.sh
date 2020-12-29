@@ -196,7 +196,7 @@ update_zone_data () {
 
 # update the ZoneMasterFile with an new serial number
 update_zone_master () {
-  Now=$(date +"%Y%m%d")
+  Now=$(date +"%Y%m%d%S")
   ZoneMasterFile="${ZoneMasterDir}/null.zone.file"
 
   if [ -f "$ZoneMasterFile" ]; then
