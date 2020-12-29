@@ -75,7 +75,7 @@ check_user () {
 # for each entry to comply with the Synology setup
 fetch_blocklist () {
   BlocklistURL="$1"
-  printf "Pulling blocklist from ${BlocklistURL}"
+  printf "Pulling blocklist from ${BlocklistURL}" >&2
   # the "-O-" tells wget to send the file to standard out instead of a real file
   # this makes it suitable for piping and eliminates need for another temp file
   wget -qO- "$BlocklistURL" | \

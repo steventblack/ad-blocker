@@ -52,7 +52,7 @@ The Domain Name _must_ be `null.zone.file` and the Serial Format _must_ be set a
 
     ```bash
         sudo -i
-        wget -O- https://raw.githubusercontent.com/0xW1sKy/ad-blocker/install.sh | /bin/sh
+        wget -O- https://raw.githubusercontent.com/0xW1sKy/ad-blocker/master/install.sh | /bin/sh
     ```
 
 The ad-blocking functionality should now be in effect. You can test the effectiveness by disabling any ad-blocking plugins in your browser and navigating to any ad-laden website to verify ads remain suppressed. Mobile devices should similarly be tested.
