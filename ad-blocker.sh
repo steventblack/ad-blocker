@@ -157,8 +157,6 @@ update_zone_data () {
   ZoneDataFile="${ZoneDataDir}/null.zone.file"
   ZoneDataDB="${ZoneDataDir}/ad-blocker.db"
   BlockList="/tmp/ad-blocker.new"
-  BlockListdebug="./ad-blocker.new"
-  cat "$BlockList" | sort | uniq > "$BlockListdebug"
   # move the final version of the block list to the final location
   cp "$BlockList" "$ZoneDataDB"
 
