@@ -74,6 +74,7 @@ check_user () {
 
 # function to fetch the blocklist and update the path element
 # for each entry to comply with the Synology setup
+
 fetch_blocklist () {
   BlocklistURL="$1"
   printf "Pulling blocklist from %s\n" "${BlocklistURL}" >&2
@@ -84,8 +85,9 @@ fetch_blocklist () {
     sed -s -e 's/ *$//g' | \
     sed -s -r 's/([^#].*)?(#)+(.*)?/\1/g' | \
     sed -r '/^\s*$/d' | \
-    sed -r 's/(.*)\s$/\1/g' | \
-    sed -r 's/(.*)\s+(.*)$/zone "\2" { type master; notify no; file "null.zone.file"; };/g' >> "/tmp/ad-blocker.new"
+    sed -r 's/(.*)(\s)$/\1/g' | \
+    sed -r 's/(.*\s)?(.*)$/\2/g' | \
+    sed -r 's/(.*)+$/zone "\1" { type master; notify no; file "null.zone.file"; };/g' >> "/tmp/ad-blocker.new"
 }
 
 # user-specified list of domains to be blocked in addition
