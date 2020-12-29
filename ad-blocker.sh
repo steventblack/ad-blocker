@@ -65,7 +65,8 @@ check_conf () {
 check_user () {
   User=$(whoami)
   if [ "$User" != "DNSServer" ]; then
-    printf "Running as $User; switching to DNSServer" >&2
+    printf "Running as %s\n" "$User" >&2
+    printf "Switching to DNSServer\n" >&2
     su -m DNSServer "$0" "$@" || exit 1
   exit 0
   fi
