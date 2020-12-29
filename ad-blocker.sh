@@ -220,14 +220,14 @@ update_zone_master () {
   "${RootDir}"/script/reload.sh 'null.zone.file'
 }
 
-manual_fixes () {
-  ZoneDataDB="${ZoneDataDir}/ad-blocker.db"
-  ZoneDataDBTmp="${ZoneDataDir}/ad-blocker.tmp"
-  cat ad-blocker.db | \
-    grep -v 'zone "format)">" { type master; notify no; file "null.zone.file"; };' | \
-    grep -v 'zone "format)</title>" { type master; notify no; file "null.zone.file"; };' > ad-blocker.tmp
-    'zone "href="rss/1.0/adservers.rss">" { type master; notify no; file "null.zone.file"; };'
-}
+# manual_fixes () {
+#   ZoneDataDB="${ZoneDataDir}/ad-blocker.db"
+#   ZoneDataDBTmp="${ZoneDataDir}/ad-blocker.tmp"
+#   cat ad-blocker.db | \
+#     grep -v 'zone "format)">" { type master; notify no; file "null.zone.file"; };' | \
+#     grep -v 'zone "format)</title>" { type master; notify no; file "null.zone.file"; };' > ad-blocker.tmp
+#     'zone "href="rss/1.0/adservers.rss">" { type master; notify no; file "null.zone.file"; };'
+# }
 
 # Global vars for common paths
 ConfDir="/usr/local/etc"
