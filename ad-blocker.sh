@@ -206,7 +206,7 @@ update_zone_master () {
   # rebuild the zone master file with the updated serial number
   { echo '$TTL 86400     ; one day';
     echo '@ IN SOA ns.null.zone.file. mail.null.zone.file. (';
-    echo '  '${Now}'00   ; serial number YYYYMMDDNN';
+    echo '  '${Now}'   ; serial number YYYYMMDDNN';
     echo '  86400        ; refresh 1 day';
     echo '  7200         ; retry 2 hours';
     echo '  864000       ; expire 10 days';
