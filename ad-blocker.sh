@@ -156,9 +156,12 @@ apply_whitelist () {
 update_zone_data () {
   ZoneDataFile="${ZoneDataDir}/null.zone.file"
   ZoneDataDB="${ZoneDataDir}/ad-blocker.db"
+  BlockListTmp="/tmp/ad-blocker.tmp"
   BlockList="/tmp/ad-blocker.new"
+  # Remove Dupes
+  cat "$BlockList" | sort | uniq > "$BlockListTmp"
+  mv "$BlockListTmp" "$BlockList"
   # move the final version of the block list to the final location
-  cat "$BlockList" | sort | uniq > "$BlockList"
   mv "$BlockList" "$ZoneDataDB"
 
   # safety check: make sure both files exist before proceeding
