@@ -127,6 +127,7 @@ apply_blacklist () {
 update_whitelist () {
   WhiteListTmp="/tmp/ad-blocker-wl.tmp"
   WhiteListURL="$1"
+  printf "Pulling whitelist from %s\n" "${WhiteListURL}" >&2
   wget -qO- "$WhiteListURL" | \
     sed -e 's/\s/ /g' | \
     sed -s -e 's/ *$//g' | \
