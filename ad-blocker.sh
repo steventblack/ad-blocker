@@ -124,16 +124,33 @@ apply_blacklist () {
   done < "$BlackList"
 }
 
+update_whitelist () {
+  WhiteListTmp="/tmp/ad-blocker-wl.tmp"
+  WhiteListURL="$1"
+  wget -qO- "$WhiteListURL" | \
+    sed -e 's/\s/ /g' | \
+    sed -s -e 's/ *$//g' | \
+    sed -s -r 's/([^#].*)?(#)+(.*)?/\1/g' | \
+    sed -r '/^\s*$/d' | \
+    sed -r 's/(.*)(\s)$/\1/g' | \
+    sed -r 's/(.*\s)?(.*)$/\2/g' >> "$WhiteListTmp"
+}
+
 # user-specified list of domains to remain unblocked
 apply_whitelist () {
   WhiteList="${ConfDir}/ad-blocker-wl.conf"
   BlockList="/tmp/ad-blocker.new"
   BlockListTmp="/tmp/ad-blocker.tmp"
-
+  WhiteListTmp="/tmp/ad-blocker-wl.tmp"
   # skip if the config doesn't exist
   if [ ! -f "$WhiteList" ]; then
     return 0
   fi
+
+  if [ -f "$WhiteListTmp" ]; then
+    cat "$WhiteListTmp" | sort | uniq > "$WhiteList"
+  fi
+
 
   # process the whitelist skipping over any comment lines
   while read -r Line
@@ -212,6 +229,49 @@ BlockLists=(
   "https://mirror1.malwaredomains.com/files/justdomains"
   "https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt"
   "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt"
+  "https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts;showintro=0"
+  "https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt"
+  "https://hosts-file.net/psh.txt"
+  "https://raw.githubusercontent.com/quidsup/notrack/master/trackers.txt"
+  "https://v.firebog.net/hosts/Airelle-trc.txt"
+  "https://hosts-file.net/ad_servers.txt"
+  "https://adaway.org/hosts.txt"
+  "https://v.firebog.net/hosts/AdguardDNS.txt"
+  "https://v.firebog.net/hosts/Admiral.txt"
+  "https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt"
+  "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt"
+  "https://v.firebog.net/hosts/Easylist.txt"
+  "https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext"
+  "https://raw.githubusercontent.com/FadeMind/hosts.extras/master/UncheckyAds/hosts"
+  "https://raw.githubusercontent.com/bigdargon/hostsVN/master/hosts"
+  "https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts"
+  "https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts_without_controversies.txt"
+  "https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Spam/hosts"
+  "https://v.firebog.net/hosts/static/w3kbl.txt"
+  "https://raw.githubusercontent.com/matomo-org/referrer-spam-blacklist/master/spammers.txt"
+  "https://someonewhocares.org/hosts/zero/hosts"
+  "https://raw.githubusercontent.com/vokins/yhosts/master/hosts"
+  "https://winhelp2002.mvps.org/hosts.txt"
+  "https://v.firebog.net/hosts/neohostsbasic.txt"
+  "https://raw.githubusercontent.com/RooneyMcNibNug/pihole-stuff/master/SNAFU.txt"
+  "https://paulgb.github.io/BarbBlock/blacklists/hosts-file.txt"
+  "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareHosts.txt"
+  "https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt"
+  "https://s3.amazonaws.com/lists.disconnect.me/simple_malvertising.txt"
+  "https://v.firebog.net/hosts/Prigent-Crypto.txt"
+  "https://mirror.cedia.org.ec/malwaredomains/immortal_domains.txt"
+  "https://bitbucket.org/ethanr/dns-blacklists/raw/8575c9f96e5b4a1308f2f12394abd86d0927a4a0/bad_lists/Mandiant_APT1_Report_Appendix_D.txt"
+  "https://phishing.army/download/phishing_army_blocklist_extended.txt"
+  "https://gitlab.com/quidsup/notrack-blocklists/raw/master/notrack-malware.txt"
+  "https://v.firebog.net/hosts/Shalla-mal.txt"
+  "https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt"
+  "https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Risk/hosts"
+  "https://urlhaus.abuse.ch/downloads/hostfile/"
+  "https://v.firebog.net/hosts/Prigent-Malware.txt"
+  "https://raw.githubusercontent.com/HorusTeknoloji/TR-PhishingList/master/url-lists.txt"
+)
+WhiteLists=(
+  "https://raw.githubusercontent.com/anudeepND/whitelist/master/domains/whitelist.txt"
 )
 
 # Main Routine
@@ -220,6 +280,9 @@ check_conf
 check_user "$@"
 for list in ${BlockLists[@]}; do
   fetch_blocklist $list
+done
+for wlist in ${WhiteLists[@]}; do
+  update_whitelist $wlist
 done
 apply_blacklist
 apply_whitelist
