@@ -72,7 +72,6 @@ The ad-blocking functionality should now be in effect. You can test the effectiv
     * First run time: `03:20`
     * Frequency: once a day
 1. For the "Task Settings" tab, fill in the fields as follow:
-    * Send run details by email: `<your email here>`
     * User defined script: `cd /tmp/; sudo /usr/local/bin/ad-blocker.sh`
 
 The run time should be set to run no more than once a day and be performed at an off-peak traffic time. The block lists don't change that frequently so be courteous to the provider. It is not strictly necessary to have the run details sent via email, but enabling it may help if there's a need to troubleshoot.
@@ -121,4 +120,6 @@ This solution works well for blocking the vast majority of ad providers. It shou
 
 ## Thanks
 
-This solution utilizes the block list provided by [yoyo.org](http://pgl.yoyo.org/adservers/). A big thanks goes out to them for their hard work and continued maintainence.
+[Steven Black](https://github.com/steventblack)
+[Another Steven Black?](https://github.com/stevenblack)
+For real tho? is this the same guy or just a weird coincidence?
