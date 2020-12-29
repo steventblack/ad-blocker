@@ -220,6 +220,15 @@ update_zone_master () {
   "${RootDir}"/script/reload.sh 'null.zone.file'
 }
 
+manual_fixes () {
+  ZoneDataDB="${ZoneDataDir}/ad-blocker.db"
+  ZoneDataDBTmp="${ZoneDataDir}/ad-blocker.tmp"
+  cat ad-blocker.db | \
+    grep -v 'zone "format)">" { type master; notify no; file "null.zone.file"; };' | \
+    grep -v 'zone "format)</title>" { type master; notify no; file "null.zone.file"; };' > ad-blocker.tmp
+    'zone "href="rss/1.0/adservers.rss">" { type master; notify no; file "null.zone.file"; };'
+}
+
 # Global vars for common paths
 ConfDir="/usr/local/etc"
 RootDir="/var/packages/DNSServer/target"
@@ -231,7 +240,6 @@ BlockLists=(
   "https://mirror1.malwaredomains.com/files/justdomains"
   "https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt"
   "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt"
-  "https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts;showintro=0"
   "https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt"
   "https://hosts-file.net/psh.txt"
   "https://raw.githubusercontent.com/quidsup/notrack/master/trackers.txt"
