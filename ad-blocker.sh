@@ -158,7 +158,8 @@ update_zone_data () {
   ZoneDataDB="${ZoneDataDir}/ad-blocker.db"
   BlockList="/tmp/ad-blocker.new"
   # move the final version of the block list to the final location
-  cat "$BlockList" | sort | uniq > "$ZoneDataDB"
+  cat "$BlockList" | sort | uniq > "$BlockList"
+  mv "$BlockList" "$ZoneDataDB"
 
   # safety check: make sure both files exist before proceeding
   # check for the include statement in the ZoneDataFile
