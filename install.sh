@@ -1,6 +1,12 @@
 wget -O /usr/local/bin/ad-blocker.sh "https://raw.githubusercontent.com/0xW1sKy/ad-blocker/master/ad-blocker.sh"
 chown root:root /usr/local/bin/ad-blocker.sh
 chmod 755 /usr/local/bin/ad-blocker.sh
+touch /usr/local/etc/ad-blocker-wl.conf
+touch /usr/local/etc/ad-blocker-bl.conf
+chown DNSServer:DNSServer /usr/local/etc/ad-blocker-wl.conf
+chmod 777 /usr/local/etc/ad-blocker-wl.conf
+chown DNSServer:DNSServer /usr/local/etc/ad-blocker-bl.conf
+chmod 777 /usr/local/etc/ad-blocker-bl.conf
 /bin/sh /usr/local/bin/ad-blocker.sh
 
 FILESIZE=$(du -h "/var/packages/DNSServer/target/named/etc/zone/data/ad-blocker.db" | cut -f1)
