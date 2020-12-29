@@ -73,12 +73,17 @@ check_user () {
 # fetch the blocklist from yoyo.org and update the path element
 # for each entry to comply with the Synology setup
 fetch_blocklist () {
-  BlocklistURL="http://pgl.yoyo.org/as/serverlist.php?hostformat=bindconfig&showintro=0&mimetype=plaintext"
+  BlocklistURL="https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
 
   # the "-O-" tells wget to send the file to standard out instead of a real file
   # this makes it suitable for piping and eliminates need for another temp file
-  wget -O- "$BlocklistURL" | \
-    sed -e 's/null.zone.file/\/etc\/zone\/master\/null.zone.file/g' > "/tmp/ad-blocker.new"
+  wget -qO- "$BlocklistURL" | \
+  	sed -e 's/\s/ /g' | \
+	sed -s -e 's/ *$//g' | \
+	sed -s -r 's/([^#].*)?(#)+(.*)?/\1/g' | \
+	sed -r '/^\s*$/d' | \
+	sed -r 's/(.*)\s$/\1/g' | \
+	sed -r 's/(.*)\s+(.*)$/zone "\2" { type master; notify no; file "null.zone.file"; };/g' > "/tmp/ad-blocker.new"
 }
 
 # user-specified list of domains to be blocked in addition to those from yoyo.org
