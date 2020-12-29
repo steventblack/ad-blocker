@@ -39,7 +39,7 @@ check_conf () {
 
   # if no white list found, then create a template & instructions
   if [ ! -f "$WhiteList" ]; then
-    echo "No white list found; creating template" >&2
+    printf "No white list found; creating template" >&2
 
   { echo "# White list of domains to remain unblocked for ad-blocker.sh";
       echo "# Add one fully-qualified domain name per line";
@@ -50,7 +50,7 @@ check_conf () {
 
   # if no black list found, then create a template & instructions
   if [ ! -f "$BlackList" ]; then
-    echo "No black list found; creating template" >&2
+    printf "No black list found; creating template" >&2
 
     { echo "# Black list of additional domains for ad-blocker.sh";
       echo "# Add one fully-qualified domain name per line";
@@ -65,7 +65,7 @@ check_conf () {
 check_user () {
   User=$(whoami)
   if [ "$User" != "DNSServer" ]; then
-    echo "Running as $User; switching to DNSServer" >&2
+    printf "Running as $User; switching to DNSServer" >&2
     su -m DNSServer "$0" "$@" || exit 1
   exit 0
   fi
@@ -75,7 +75,7 @@ check_user () {
 # for each entry to comply with the Synology setup
 fetch_blocklist () {
   BlocklistURL="$1"
-
+  printf "Pulling blocklist from ${BlocklistURL}"
   # the "-O-" tells wget to send the file to standard out instead of a real file
   # this makes it suitable for piping and eliminates need for another temp file
   wget -qO- "$BlocklistURL" | \
