@@ -2,15 +2,16 @@
 
 ###########################
 # (C) 2017 Steven Black
+# Updated by Kyle Burk
 ###########################
 #
 # 2017-04-17 - 1.0.0 Initial release
 # 2017-04-18 - 1.1.0 Improved modularization; added functionality for white & black lists
 # 2017-04-25 - 1.1.1 Relocated conf dir to /usr/local/etc
-# 2017-04-25 - 1.1.2 Relocate script dir; update checks to create conf templates 
+# 2017-04-25 - 1.1.2 Relocate script dir; update checks to create conf templates
 # 2017-05-17 - 1.1.3 Remove local declarations for improved compatibility
 # 2017-05-17 - 1.1.4 Cleanup syntax as per shellcheck.net suggestions
-#
+# 2020-12-28 - 2.0.0 Modify to use host file lists, remove yoyo
 ###########################
 
 # routine for ensuring all necessary dependencies are found
@@ -39,11 +40,11 @@ check_conf () {
   # if no white list found, then create a template & instructions
   if [ ! -f "$WhiteList" ]; then
     echo "No white list found; creating template" >&2
-	
-	{ echo "# White list of domains to remain unblocked for ad-blocker.sh"; 
-      echo "# Add one fully-qualified domain name per line"; 
-      echo "# Comments are indicated by a '#' as the first character"; 
-      echo "# example:"; 
+
+  { echo "# White list of domains to remain unblocked for ad-blocker.sh";
+      echo "# Add one fully-qualified domain name per line";
+      echo "# Comments are indicated by a '#' as the first character";
+      echo "# example:";
       echo "# ad.example.com"; } > "$WhiteList"
   fi
 
@@ -51,10 +52,10 @@ check_conf () {
   if [ ! -f "$BlackList" ]; then
     echo "No black list found; creating template" >&2
 
-    { echo "# Black list of additional domains for ad-blocker.sh"; 
-      echo "# Add one fully-qualified domain name per line"; 
-      echo "# Comments are indicted by a '#' as the first character"; 
-      echo "# example:"; 
+    { echo "# Black list of additional domains for ad-blocker.sh";
+      echo "# Add one fully-qualified domain name per line";
+      echo "# Comments are indicted by a '#' as the first character";
+      echo "# example:";
       echo "# ad.example.com"; } > "$BlackList"
   fi
 }
@@ -66,27 +67,27 @@ check_user () {
   if [ "$User" != "DNSServer" ]; then
     echo "Running as $User; switching to DNSServer" >&2
     su -m DNSServer "$0" "$@" || exit 1
-	exit 0
+  exit 0
   fi
 }
 
-# fetch the blocklist from yoyo.org and update the path element
+# function to fetch the blocklist and update the path element
 # for each entry to comply with the Synology setup
 fetch_blocklist () {
-  BlocklistURL="https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+  BlocklistURL="$1"
 
   # the "-O-" tells wget to send the file to standard out instead of a real file
   # this makes it suitable for piping and eliminates need for another temp file
   wget -qO- "$BlocklistURL" | \
-  	sed -e 's/\s/ /g' | \
-	sed -s -e 's/ *$//g' | \
-	sed -s -r 's/([^#].*)?(#)+(.*)?/\1/g' | \
-	sed -r '/^\s*$/d' | \
-	sed -r 's/(.*)\s$/\1/g' | \
-	sed -r 's/(.*)\s+(.*)$/zone "\2" { type master; notify no; file "null.zone.file"; };/g' > "/tmp/ad-blocker.new"
+    sed -e 's/\s/ /g' | \
+    sed -s -e 's/ *$//g' | \
+    sed -s -r 's/([^#].*)?(#)+(.*)?/\1/g' | \
+    sed -r '/^\s*$/d' | \
+    sed -r 's/(.*)\s$/\1/g' | \
+    sed -r 's/(.*)\s+(.*)$/zone "\2" { type master; notify no; file "null.zone.file"; };/g' >> "/tmp/ad-blocker.new"
 }
 
-# user-specified list of domains to be blocked in addition to those from yoyo.org
+# user-specified list of domains to be blocked in addition
 apply_blacklist () {
   BlackList="${ConfDir}/ad-blocker-bl.conf"
   BlockList="/tmp/ad-blocker.new"
@@ -105,7 +106,7 @@ apply_blacklist () {
     if [ -z "$Domain" ]; then
       continue;
     fi
-	
+
     # if domain already listed then skip it and continue on to the next line
     # make sure you don't get a false positive with a partial match
     # by using the "-w" option on grep
@@ -172,7 +173,7 @@ update_zone_data () {
 # update the ZoneMasterFile with an new serial number
 update_zone_master () {
   Now=$(date +"%Y%m%d")
-  ZoneMasterFile="${ZoneMasterDir}/null.zone.file" 
+  ZoneMasterFile="${ZoneMasterDir}/null.zone.file"
 
   if [ -f "$ZoneMasterFile" ]; then
     rm -f "$ZoneMasterFile"
@@ -191,7 +192,7 @@ update_zone_master () {
     echo '* IN A   127.0.0.1'; } > "$ZoneMasterFile"
 
   # reload the server config to pick up the changes
-  "${RootDir}"/script/reload.sh
+  "${RootDir}"/script/reload.sh 'null.zone.file'
 }
 
 # Global vars for common paths
@@ -200,12 +201,20 @@ RootDir="/var/packages/DNSServer/target"
 ZoneDir="${RootDir}/named/etc/zone"
 ZoneDataDir="${ZoneDir}/data"
 ZoneMasterDir="${ZoneDir}/master"
+BlockLists=(
+  "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+  "https://mirror1.malwaredomains.com/files/justdomains"
+  "https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt"
+  "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt"
+)
 
 # Main Routine
 check_deps
 check_conf
 check_user "$@"
-fetch_blocklist
+for list in ${BlockLists[@]}; do
+  fetch_blocklist $list
+done
 apply_blacklist
 apply_whitelist
 update_zone_data
