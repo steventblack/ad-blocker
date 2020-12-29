@@ -221,5 +221,6 @@ apply_blacklist
 apply_whitelist
 update_zone_data
 update_zone_master
+rm /tmp/ad-blocker.new
 
 exit 0
