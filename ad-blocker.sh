@@ -149,7 +149,7 @@ apply_whitelist () {
   fi
 
   if [ -f "$WhiteListTmp" ]; then
-    cat "$WhiteListTmp" | sort | uniq > "$WhiteList"
+    cat "$WhiteListTmp" | sort | uniq | grep -v 'zone "" { type master; notify no; file "null.zone.file"; };' > "$WhiteList"
   fi
 
 
@@ -177,7 +177,7 @@ update_zone_data () {
   BlockListTmp="/tmp/ad-blocker.tmp"
   BlockList="/tmp/ad-blocker.new"
   # Remove Dupes
-  cat "$BlockList" | sort | uniq > "$BlockListTmp"
+  cat "$BlockList" | sort | uniq | grep -v 'zone "" { type master; notify no; file "null.zone.file"; };' > "$BlockListTmp"
   mv "$BlockListTmp" "$BlockList"
   # move the final version of the block list to the final location
   mv "$BlockList" "$ZoneDataDB"
