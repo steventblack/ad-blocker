@@ -88,6 +88,7 @@ fetch_blocklist () {
     sed -r 's/(.*)(\s)$/\1/g' | \
     sed -r 's/(.*\s)?(.*)$/\2/g' | \
     sed -r 's/(.*)+$/zone "\1" { type master; notify no; file "null.zone.file"; };/g' >> "/tmp/ad-blocker.new"
+  printf "\n" >> "/tmp/ad-blocker.new"
 }
 
 # user-specified list of domains to be blocked in addition
