@@ -1,6 +1,8 @@
 # ad-blocker
 A simple ad-blocker for Synology devices
 
+this is a modified version of https://github.com/steventblack/ad-blocker to work on my DS218 running DSM 7.0 beta
+
 ## Background
 
 The main goal of this project is to setup a simple ad-blocking service that will work on all LAN-connected devices. In order to keep things simple, an additional goal is to run this service on the Synology NAS that already provides many file and network services (including DNS) for the LAN. Because the DNS service is in active use on the Synology device, many solutions (like the very nice Pi-hole package) are not workable as there are conflicts over the DNS port. This solution has a minimal impact on the standard Synology system and so should be largely free of unwanted side effects and be "update friendly".
