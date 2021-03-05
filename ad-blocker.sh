@@ -10,6 +10,7 @@
 # 2017-04-25 - 1.1.2 Relocate script dir; update checks to create conf templates 
 # 2017-05-17 - 1.1.3 Remove local declarations for improved compatibility
 # 2017-05-17 - 1.1.4 Cleanup syntax as per shellcheck.net suggestions
+# 2021-03-05 - for DS218 DSM 7 (tokuro)
 #
 ###########################
 
