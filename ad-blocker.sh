@@ -78,7 +78,7 @@ fetch_blocklist () {
   # the "-O-" tells wget to send the file to standard out instead of a real file
   # this makes it suitable for piping and eliminates need for another temp file
   wget -O- "$BlocklistURL" | \
-    sed -e 's/null.zone.file/\/etc\/zone\/master\/null.zone.file/g' > "/tmp/ad-blocker.new"
+    sed -e 's/null.zone.file/\/var\/packages\/DNSServer\/target\/named\/etc\/zone\/master\/null.zone.file/g' > "/tmp/ad-blocker.new"
 }
 
 # user-specified list of domains to be blocked in addition to those from yoyo.org
@@ -156,10 +156,10 @@ update_zone_data () {
   # check for the include statement in the ZoneDataFile
   # if it is present do nothing, else append the include statement to the ZoneDataFile
   if [ -f "$ZoneDataDB" ] && [ -f "$ZoneDataFile" ]; then
-    Matches=$(grep 'include "/etc/zone/data/ad-blocker.db";' "$ZoneDataFile")
+    Matches=$(grep 'include "/var/packages/DNSServer/target/named/etc/zone/data/ad-blocker.db";' "$ZoneDataFile")
     if [ -z "$Matches" ]; then
       echo '' >> "$ZoneDataFile"
-      echo 'include "/etc/zone/data/ad-blocker.db";' >> "$ZoneDataFile"
+      echo 'include "/var/packages/DNSServer/target/named/etc/zone/data/ad-blocker.db";' >> "$ZoneDataFile"
     fi
   fi
 }
