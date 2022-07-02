@@ -186,7 +186,7 @@ update_zone_master () {
     echo '* IN A   127.0.0.1'; } > "$ZoneMasterFile"
 
   # reload the server config to pick up the changes
-  "${RootDir}"/script/reload.sh
+  "${RootDir}"/script/reload.sh null.zone.file
 }
 
 # Global vars for common paths
